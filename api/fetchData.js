@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 
-const apiUrl = "https://example.com/api/data"; // Replace with your actual API
+const apiUrl = "https://sb-notes-api.vercel.app/api/content?bid=neev-2-0-2025-376533&sid=664c4df7df7b3f00185286dd&id=664c515e9cbcf0c125d2ad20"; // Replace with your actual API
 
 export default async function handler(req, res) {
     const { id } = req.query;
