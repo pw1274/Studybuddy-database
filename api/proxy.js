@@ -21,7 +21,7 @@ export default async function handler(req, res) {
 
     const cacheKey = `${bid}-${sid}-${id}`;
 
-    // Step 2: Attempt to Fetch Data from External API
+    // Step 2: Try to Fetch Data from External API
     try {
         const apiResponse = await fetch(`${externalApi}?bid=${bid}&sid=${sid}&id=${id}`);
         if (!apiResponse.ok) {
@@ -30,21 +30,22 @@ export default async function handler(req, res) {
 
         const apiData = await apiResponse.json();
 
-        // Save the response to the cache
+        // Step 3: Save the Response to Cache
         cachedData[cacheKey] = apiData;
         fs.writeFileSync(dataPath, JSON.stringify(cachedData, null, 2));
 
         console.log("Serving data from external API and saved to cache.");
         return res.status(200).json({ source: "api", data: apiData });
     } catch (error) {
-        console.error("Error fetching data from external API:", error.message);
+        console.error("External API failed:", error.message);
 
-        // Step 3: Fallback to Cached Data if External API Fails
+        // Step 4: Fallback to Cached Data if External API Fails
         if (cachedData[cacheKey]) {
             console.log("Serving data from cache as fallback.");
             return res.status(200).json({ source: "cache", data: cachedData[cacheKey] });
         }
 
-        return res.status(500).json({ error: "Failed to fetch data from external API and no cache available." });
+        // Step 5: No Cached Data and External API Failed
+        return res.status(500).json({ error: "No data available from cache or external API." });
     }
 }
