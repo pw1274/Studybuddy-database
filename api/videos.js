@@ -1,6 +1,6 @@
 let videoCacheData = {};  // In-memory cache for the current video data
 
-const videoApi = "https://sb-videos-api.vercel.app/";
+const videoApi = "https://sb-videos-api.vercel.app/api/content";
 
 export default async function handler(req, res) {
     const { bid, sid, id } = req.query;
