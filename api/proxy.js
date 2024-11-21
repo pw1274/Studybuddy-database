@@ -1,5 +1,4 @@
-import fs from "fs";
-import path from "path";
+let cacheData = {};  // In-memory cache for the current execution
 
 const externalApi = "https://sb-notes-api.vercel.app/api/content";
 
@@ -10,16 +9,6 @@ export default async function handler(req, res) {
     if (!bid || !sid || !id) {
         return res.status(400).json({ error: "Missing required parameters: bid, sid, id" });
     }
-
-    const cacheFilePath = path.join(process.cwd(), "data", "cachedData.json");
-
-    // Ensure the cache file exists
-    if (!fs.existsSync(cacheFilePath)) {
-        fs.writeFileSync(cacheFilePath, JSON.stringify({}), "utf-8");
-    }
-
-    // Load existing cache
-    const cacheData = JSON.parse(fs.readFileSync(cacheFilePath, "utf-8"));
 
     const cacheKey = `${bid}-${sid}-${id}`;
 
@@ -33,22 +22,21 @@ export default async function handler(req, res) {
 
         const data = await response.json();
 
-        // Save the fetched data to cache
+        // Save the fetched data in the in-memory cache
         cacheData[cacheKey] = data;
-        fs.writeFileSync(cacheFilePath, JSON.stringify(cacheData, null, 2), "utf-8");
 
-        console.log("Data fetched from API and saved to cache.");
+        console.log("Data fetched from API and saved to memory.");
         return res.status(200).json({ source: "api", data });
     } catch (error) {
         console.error("External API failed:", error.message);
 
         // Check if data is available in cache
         if (cacheData[cacheKey]) {
-            console.log("Serving data from cache as fallback.");
+            console.log("Serving data from memory cache as fallback.");
             return res.status(200).json({ source: "cache", data: cacheData[cacheKey] });
         }
 
-        // Return error if no cache is available
+        // Return error if no data is available from cache
         return res.status(500).json({ error: "No data available from cache or external API." });
     }
 }
