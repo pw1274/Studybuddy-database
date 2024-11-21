@@ -11,43 +11,44 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: "Missing required parameters: bid, sid, id" });
     }
 
-    const dataPath = path.join(process.cwd(), "data", "cachedResponses.json");
+    const cacheFilePath = path.join(process.cwd(), "data", "cachedData.json");
 
-    // Step 1: Ensure the cache file exists
-    if (!fs.existsSync(dataPath)) {
-        fs.writeFileSync(dataPath, JSON.stringify({}), "utf-8");
+    // Ensure the cache file exists
+    if (!fs.existsSync(cacheFilePath)) {
+        fs.writeFileSync(cacheFilePath, JSON.stringify({}), "utf-8");
     }
 
-    // Load the existing cache
-    let cachedData = JSON.parse(fs.readFileSync(dataPath, "utf-8"));
+    // Load existing cache
+    const cacheData = JSON.parse(fs.readFileSync(cacheFilePath, "utf-8"));
 
     const cacheKey = `${bid}-${sid}-${id}`;
 
-    // Step 2: Fetch data from the external API
     try {
-        const apiResponse = await fetch(`${externalApi}?bid=${bid}&sid=${sid}&id=${id}`);
-        if (!apiResponse.ok) {
-            throw new Error(`External API error: ${apiResponse.statusText}`);
+        // Fetch data from the external API
+        const response = await fetch(`${externalApi}?bid=${bid}&sid=${sid}&id=${id}`);
+
+        if (!response.ok) {
+            throw new Error(`API Error: ${response.statusText}`);
         }
 
-        const apiData = await apiResponse.json();
+        const data = await response.json();
 
-        // Step 3: Save the response to the cache
-        cachedData[cacheKey] = apiData;
-        fs.writeFileSync(dataPath, JSON.stringify(cachedData, null, 2), "utf-8");
+        // Save the fetched data to cache
+        cacheData[cacheKey] = data;
+        fs.writeFileSync(cacheFilePath, JSON.stringify(cacheData, null, 2), "utf-8");
 
-        console.log("Serving data from external API and saved to cache.");
-        return res.status(200).json({ source: "api", data: apiData });
+        console.log("Data fetched from API and saved to cache.");
+        return res.status(200).json({ source: "api", data });
     } catch (error) {
         console.error("External API failed:", error.message);
 
-        // Step 4: Fallback to cache if API fails
-        if (cachedData[cacheKey]) {
+        // Check if data is available in cache
+        if (cacheData[cacheKey]) {
             console.log("Serving data from cache as fallback.");
-            return res.status(200).json({ source: "cache", data: cachedData[cacheKey] });
+            return res.status(200).json({ source: "cache", data: cacheData[cacheKey] });
         }
 
-        // Step 5: Return error if no cache is available
+        // Return error if no cache is available
         return res.status(500).json({ error: "No data available from cache or external API." });
     }
 }
