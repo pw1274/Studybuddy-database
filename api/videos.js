@@ -19,8 +19,8 @@ export default async function handler(req, res) {
     res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
     res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, randomid");  // Allow randomid header
 
+    // Respond to preflight request
     if (req.method === "OPTIONS") {
-        // Respond to preflight request
         return res.status(200).end();
     }
 
