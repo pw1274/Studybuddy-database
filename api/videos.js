@@ -17,7 +17,7 @@ export default async function handler(req, res) {
     }
 
     res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
-    res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");  // Allow Authorization header
 
     if (req.method === "OPTIONS") {
         // Respond to preflight request
@@ -33,7 +33,11 @@ export default async function handler(req, res) {
 
     try {
         // Fetch video data from the external video API
-        const response = await fetch(`${videoApi}?bid=${bid}&sid=${sid}&id=${id}`);
+        const response = await fetch(`${videoApi}?bid=${bid}&sid=${sid}&id=${id}`, {
+            headers: {
+                'Authorization': req.headers['authorization']  // Forward the authorization header
+            }
+        });
 
         if (!response.ok) {
             throw new Error(`API Error: ${response.statusText}`);
