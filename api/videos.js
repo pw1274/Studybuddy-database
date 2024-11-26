@@ -5,6 +5,16 @@ const videoApi = "https://sb-videos-api.vercel.app/api/content";
 export default async function handler(req, res) {
     const { bid, sid, id } = req.query;
 
+    // Set CORS headers
+    res.setHeader("Access-Control-Allow-Origin", "https://mystudybuddy.in"); // Replace with your domain
+    res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+
+    if (req.method === "OPTIONS") {
+        // Respond to preflight request
+        return res.status(200).end();
+    }
+
     // Ensure required parameters are present
     if (!bid || !sid || !id) {
         return res.status(400).json({ error: "Missing required parameters: bid, sid, id" });
