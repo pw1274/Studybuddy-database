@@ -5,8 +5,17 @@ const videoApi = "https://sb-videos-api.vercel.app/api/content";
 export default async function handler(req, res) {
     const { bid, sid, id } = req.query;
 
-    // Set CORS headers
-    res.setHeader("Access-Control-Allow-Origin", "https://mystudybuddy.in"); // Replace with your domain
+    // Set CORS headers dynamically based on the origin
+    const allowedOrigins = [
+        "https://mystudybuddy.in", 
+        "https://www.mystudybuddy.in"
+    ];
+    const origin = req.headers.origin;
+
+    if (allowedOrigins.includes(origin)) {
+        res.setHeader("Access-Control-Allow-Origin", origin);
+    }
+
     res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
     res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 
